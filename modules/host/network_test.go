@@ -70,6 +70,7 @@ func TestHostWorkingStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer ht.Close()
 
 	if ht.host.WorkingStatus() != modules.HostWorkingStatusChecking {
 		t.Fatal("expected working state to initially be modules.HostWorkingStatusChecking")
@@ -107,7 +108,23 @@ func TestHostConnectabilityStatus(t *testing.T) {
 		t.SkipNow()
 	}
 	t.Parallel()
+
 	ht, err := newHostTester(t.Name())
+
+	// create a peer for the check to run on
+	peer, err := newHostTester(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer peer.Close()
+
+	ht, err := newHostTester(t.Name() + "-peer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ht.Close()
+
+	err = ht.gateway.Connect(peer.gateway.Address())
 	if err != nil {
 		t.Fatal(err)
 	}
