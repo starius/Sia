@@ -1482,8 +1482,6 @@ func TestRemoteFileRepair(t *testing.T) {
 
 	// add a few new blocks in order to cause the renter to form contracts with the new host
 	for i := 0; i < 5; i++ {
-		// mine a block every check, causing the contractor to form
-		// new contracts with the new host.
 		_, err = stNewHost.miner.AddBlock()
 		if err != nil {
 			t.Fatal(err)
