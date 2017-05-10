@@ -187,6 +187,11 @@ func (w *Wallet) LoadSeed(masterKey crypto.TwofishKey, seed modules.Seed) error 
 	}
 	defer w.tg.Done()
 
+	if !w.scanLock.TryLock() {
+		return errScanInProgress
+	}
+	defer w.scanLock.Unlock()
+
 	// Because the recovery seed does not have a UID, duplication must be
 	// prevented by comparing with the list of decrypted seeds. This can only
 	// occur while the wallet is unlocked.
@@ -287,6 +292,11 @@ func (w *Wallet) SweepSeed(seed modules.Seed) (coins, funds types.Currency, err 
 		return
 	}
 	defer w.tg.Done()
+
+	if !w.scanLock.TryLock() {
+		return types.Currency{}, types.Currency{}, errScanInProgress
+	}
+	defer w.scanLock.Unlock()
 
 	w.mu.RLock()
 	match := seed == w.primarySeed
