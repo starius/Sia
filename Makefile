@@ -31,6 +31,7 @@ dependencies:
 	go get -u github.com/client9/misspell/cmd/misspell
 	go get -u github.com/golang/lint/golint
 	go get -u github.com/NebulousLabs/glyphcheck
+	go get -u github.com/kardianos/govendor
 
 # pkgs changes which packages the makefile calls operate on. run changes which
 # tests are run during testing.
@@ -66,12 +67,15 @@ spellcheck:
 dev:
 	go install -race -tags='dev debug profile netgo' $(pkgs)
 
+download-vendor:
+	govendor sync
+
 # release builds and installs release binaries.
-release:
+release: download-vendor
 	go install -tags='debug profile netgo' $(pkgs)
-release-race:
+release-race: download-vendor
 	go install -race -tags='debug profile netgo' $(pkgs)
-release-std:
+release-std: download-vendor
 	go install -tags 'netgo' -ldflags='-s -w' $(pkgs)
 
 # clean removes all directories that get automatically created during
