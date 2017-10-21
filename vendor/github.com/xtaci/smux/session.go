@@ -17,7 +17,6 @@ const (
 const (
 	errBrokenPipe      = "broken pipe"
 	errInvalidProtocol = "invalid protocol version"
-	errGoAway          = "stream id overflows, should start a new connection"
 )
 
 type writeRequest struct {
@@ -34,9 +33,8 @@ type writeResult struct {
 type Session struct {
 	conn io.ReadWriteCloser
 
-	config           *Config
-	nextStreamID     uint32 // next stream identifier
-	nextStreamIDLock sync.Mutex
+	config       *Config
+	nextStreamID uint32 // next stream identifier
 
 	bucket       int32         // token bucket
 	bucketNotify chan struct{} // used for waiting for tokens
@@ -49,8 +47,6 @@ type Session struct {
 	chAccepts chan *Stream
 
 	dataReady int32 // flag data has arrived
-
-	goAway int32 // flag id exhausted
 
 	deadline atomic.Value
 
@@ -71,7 +67,7 @@ func newSession(config *Config, conn io.ReadWriteCloser, client bool) *Session {
 	if client {
 		s.nextStreamID = 1
 	} else {
-		s.nextStreamID = 0
+		s.nextStreamID = 2
 	}
 	go s.recvLoop()
 	go s.sendLoop()
@@ -85,22 +81,7 @@ func (s *Session) OpenStream() (*Stream, error) {
 		return nil, errors.New(errBrokenPipe)
 	}
 
-	// generate stream id
-	s.nextStreamIDLock.Lock()
-	if s.goAway > 0 {
-		s.nextStreamIDLock.Unlock()
-		return nil, errors.New(errGoAway)
-	}
-
-	s.nextStreamID += 2
-	sid := s.nextStreamID
-	if sid == sid%2 { // stream-id overflows
-		s.goAway = 1
-		s.nextStreamIDLock.Unlock()
-		return nil, errors.New(errGoAway)
-	}
-	s.nextStreamIDLock.Unlock()
-
+	sid := atomic.AddUint32(&s.nextStreamID, 2)
 	stream := newStream(sid, s.config.MaxFrameSize, s)
 
 	if _, err := s.writeFrame(newFrame(cmdSYN, sid)); err != nil {

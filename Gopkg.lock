@@ -136,7 +136,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["blake2b","ed25519","ed25519/internal/edwards25519","twofish"]
+  packages = ["blake2b","ed25519","ed25519/internal/edwards25519","ssh/terminal","twofish"]
   revision = "9419663f5a44be8b34ca85f08abc5fe1be11f8a3"
 
 [[projects]]
@@ -148,7 +148,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = ["unix","windows"]
   revision = "314a259e304ff91bd6985da2a7149bbf91237993"
 
 [[projects]]
@@ -166,6 +166,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9bd7ea793f59701502e8148f165399b03914d6a385228cb66a4c535d93e2ae0f"
+  inputs-digest = "2a449e34c232cbf0bbc6034340266e42dc3cf2640d73a57392d7c63333804d02"
   solver-name = "gps-cdcl"
   solver-version = 1
